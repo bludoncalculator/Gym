@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f3d9df">
+<title>Amelia's Gym Program</title>
+<style>
+:root{--pink:#e9b8c5;--deep:#9b6574;--cream:#fffaf7;--ink:#3f3437;--muted:#8b7c80;--line:#eadfe0;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Avenir Next",Inter,Arial,sans-serif}
+.app{max-width:760px;margin:auto;min-height:100vh;padding-bottom:90px}
+header{padding:28px 20px 18px;background:linear-gradient(180deg,#f7e4e8 0%,var(--cream) 100%)}
+.kicker{font-size:12px;letter-spacing:2px;color:var(--deep);font-weight:700}.title{font-size:30px;font-weight:800;margin:7px 0 3px;letter-spacing:-.8px}.sub{color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:14px 16px 8px;position:sticky;top:0;background:rgba(255,250,247,.94);backdrop-filter:blur(12px);z-index:5}.tab{border:1px solid var(--line);background:white;border-radius:18px;padding:9px 13px;white-space:nowrap;font-size:12px;font-weight:700;color:var(--muted)}.tab.active{background:var(--pink);border-color:var(--pink);color:#513b42}
+.content{padding:10px 16px}.dayhead{display:flex;justify-content:space-between;align-items:end;margin:10px 4px 14px}.dayname{font-size:22px;font-weight:800}.focus{font-size:12px;color:var(--deep);font-weight:700;text-align:right}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:11px;box-shadow:0 4px 18px rgba(110,70,80,.05)}
+.exrow{display:flex;justify-content:space-between;gap:10px}.exname{font-size:16px;font-weight:750}.meta{font-size:12px;color:var(--muted);margin-top:4px}.pill{font-size:11px;background:#f8edf0;color:var(--deep);padding:6px 9px;border-radius:12px;height:max-content;font-weight:700}
+.sets{margin-top:13px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.setbox{border:1px solid var(--line);border-radius:12px;padding:8px;background:#fffdfc}.setbox label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px}.setbox input{width:100%;border:0;outline:0;font-size:15px;background:transparent;color:var(--ink);font-weight:700}.done{margin-top:10px;width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px;font-weight:700;color:var(--deep)}.done.checked{background:#f4dce2;border-color:#f4dce2;color:#513b42}
+.rest{font-size:11px;color:var(--muted);margin-top:9px}.empty{padding:28px 10px;text-align:center;color:var(--muted)}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(255,250,247,.95);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:10px 16px;display:flex;justify-content:center;z-index:10}.bottom button{border:0;background:var(--pink);color:#513b42;border-radius:16px;padding:12px 20px;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:10px 0 16px}.stat{background:white;border:1px solid var(--line);border-radius:16px;padding:13px}.num{font-size:22px;font-weight:800}.lab{font-size:10px;color:var(--muted);margin-top:3px}.sectiontitle{font-size:16px;font-weight:800;margin:20px 3px 9px}.progressrow{background:white;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}.progressrow strong{font-size:13px}.progressrow small{display:block;color:var(--muted);margin-top:4px}
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:#403438;color:#fff;padding:10px 14px;border-radius:14px;font-size:12px;transition:.2s;z-index:20}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:700px){.app{padding-top:10px}.tabs{border-radius:18px;margin:0 16px}.content{padding:10px 24px}.card{padding:18px}}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f3d9df">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Amelia's Gym">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+}
+</script>
+
+</head>
+<body>
+<div class="app">
+<header>
+<div class="kicker">WEEKLY ROUTINE</div>
+<div class="title">AMELIA'S GYM PROGRAM</div>
+<div class="sub">Train • log • progress</div>
+</header>
+<nav class="tabs" id="tabs"></nav>
+<main class="content" id="content"></main>
+</div>
+<div class="bottom"><button onclick="showProgress()">♡ VIEW PROGRESS</button></div>
+<div class="toast" id="toast"></div>
+<script>
+const program={
+Monday:{focus:"Glutes + Hamstrings",ex:[
+["Hip Thrust","4 × 8–10",4,"2–3 min"],["Bulgarian Split Squat","3 × 8–10 / leg",3,"2 min"],["Romanian Deadlift","3 × 8–10",3,"2 min"],["Cable Kickback","3 × 12–15 / leg",3,"60–90 sec"],["Hamstring Curl","3 × 10–15",3,"60–90 sec"],["Hip Abduction","3 × 15–20",3,"60–90 sec"]]},
+Tuesday:{focus:"Upper Body + Core",ex:[
+["Lat Pulldown","3 × 10–12",3,"90 sec"],["Seated Cable Row","3 × 10–12",3,"90 sec"],["Dumbbell Shoulder Press","3 × 8–12",3,"90 sec"],["Lateral Raise","3 × 12–15",3,"60 sec"],["Tricep Pushdown","3 × 12–15",3,"60–90 sec"],["Dumbbell Bicep Curl","2 × 10–15",2,"60 sec"],["Cable Crunch","3 × 12–15",3,"60 sec"],["Pallof Press","2 × 10–12 / side",2,"60 sec"]]},
+Wednesday:{focus:"Hot Mat Pilates",pilates:true},
+Thursday:{focus:"Glutes + Quads",ex:[
+["Hip Thrust","3 × 10–12",3,"2 min"],["Bulgarian Split Squat","3 × 10 / leg",3,"2 min"],["Leg Press","3 × 10–12",3,"2 min"],["Reverse Lunge","3 × 10 / leg",3,"90 sec"],["Leg Extension","2 × 12–15",2,"60–90 sec"],["Hip Abduction","3 × 15–20",3,"60–90 sec"],["Cable Kickback","2 × 15 / leg",2,"60–90 sec"]]},
+Friday:{focus:"Hot Mat Pilates / Walk",pilates:true,friday:true},
+Saturday:{focus:"Recovery / Walk",recovery:true},
+Sunday:{focus:"Rest",rest:true}
+};
+const days=Object.keys(program);
+let selected=localStorage.getItem("ameliaDay")||"Monday";
+function key(d,i,s){return `amelia_${d}_${i}_${s}`}
+function renderTabs(){document.getElementById("tabs").innerHTML=days.map(d=>`<button class="tab ${d===selected?'active':''}" onclick="selectDay('${d}')">${d.slice(0,3).toUpperCase()}</button>`).join("")}
+function selectDay(d){selected=d;localStorage.setItem("ameliaDay",d);renderTabs();renderDay()}
+function renderDay(){
+ const p=program[selected], c=document.getElementById("content");
+ let html=`<div class="dayhead"><div class="dayname">${selected}</div><div class="focus">${p.focus}</div></div>`;
+ if(p.ex){p.ex.forEach((e,i)=>{
+  let boxes="";for(let s=0;s<e[2];s++){let v=localStorage.getItem(key(selected,i,s))||"";boxes+=`<div class="setbox"><label>SET ${s+1} · KG</label><input inputmode="decimal" value="${v}" onchange="save('${selected}',${i},${s},this.value)" placeholder="—"></div>`}
+  html+=`<div class="card"><div class="exrow"><div><div class="exname">${e[0]}</div><div class="meta">${e[1]}</div></div><div class="pill">${e[2]} sets</div></div><div class="sets">${boxes}</div><div class="rest">Rest: ${e[3]}</div><button id="done_${i}" class="done ${localStorage.getItem('done_'+selected+'_'+i)==='1'?'checked':''}" onclick="toggleDone(${i})">${localStorage.getItem('done_'+selected+'_'+i)==='1'?'✓ Completed':'Mark exercise complete'}</button></div>`
+ })} else if(p.pilates){html+=`<div class="card"><div class="exname">45–60 min Hot Mat Pilates</div><div class="meta">Core • glutes • mobility • control</div><div class="rest">${p.friday?'Or take an easy walk if you want a lighter day.':'Keep it controlled and comfortable — no strict sets/reps needed.'}</div></div>`}
+ else if(p.recovery){html+=`<div class="card"><div class="exname">Easy recovery</div><div class="meta">Easy walk, mobility or complete rest</div></div>`}
+ else if(p.rest){html+=`<div class="card"><div class="exname">Rest day ♡</div><div class="meta">Recover and come back fresh.</div></div>`}
+ if(selected==="Tuesday") html+=`<div class="card"><div class="exname">StairMaster</div><div class="meta">15–20 min · moderate pace</div></div>`;
+ html+=`<div class="card"><div class="exname">Progression</div><div class="meta">When you can hit the top of the rep range with good form, increase the weight slightly next time.</div></div>`;
+ c.innerHTML=html;
+}
+function save(d,i,s,v){localStorage.setItem(key(d,i,s),v);toast("Saved ♡")}
+function toggleDone(i){let k='done_'+selected+'_'+i,v=localStorage.getItem(k)==='1'?'0':'1';localStorage.setItem(k,v);renderDay()}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),900)}
+function showProgress(){
+ let sessions=0, exercises=0;
+ days.forEach(d=>{if([...Array(program[d].ex?.length||0).keys()].some(i=>localStorage.getItem('done_'+d+'_'+i)==='1'))sessions++;exercises+=(program[d].ex?.filter((_,i)=>localStorage.getItem('done_'+d+'_'+i)==='1').length||0)});
+ const c=document.getElementById("content");
+ c.innerHTML=`<div class="dayhead"><div class="dayname">Progress ♡</div><div class="focus">Keep building</div></div>
+ <div class="stats"><div class="stat"><div class="num">${sessions}</div><div class="lab">workout days logged</div></div><div class="stat"><div class="num">${exercises}</div><div class="lab">exercises completed</div></div><div class="stat"><div class="num">${days.length}</div><div class="lab">days in the routine</div></div></div>
+ <div class="sectiontitle">Weight history</div>
+ <div class="card"><div class="meta">Your logged weights stay saved on this device. Open each workout to see the last numbers you entered and build from there.</div></div>
+ <div class="sectiontitle">Weekly split</div>
+ ${days.map(d=>`<div class="progressrow"><strong>${d}</strong><small>${program[d].focus}</small></div>`).join("")}
+ <button class="done" onclick="selectDay('${selected}')">← Back to ${selected}</button>`;
+}
+renderTabs();renderDay();
+</script>
+</body>
+</html>
